@@ -7,6 +7,7 @@ module Sequel
 
       module ClassMethods
         private
+
         def def_bulk_setter(opts, &block)
           association_module_def(:"#{opts[:name]}=", opts, &block) unless opts[:read_only]
         end
@@ -17,19 +18,19 @@ module Sequel
           super
           def_bulk_setter(opts) do |list|
             cur = send(opts[:name])
-            instance_variable_set("@_#{opts[:name]}_add", list.reject{ |v| cur.detect{ |v1| v == v1 } })
-            instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.detect{ |v1| v == v1 } })
+            instance_variable_set("@_#{opts[:name]}_add", list.reject{ |v| cur.detect{ |v1| v.pk == v1.pk } })
+            instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.detect{ |v1| v.pk == v1.pk } })
             cur.replace(list)
 
+            name = "#{opts[:name]}".singularize
+
             after_save_hook do
-              singular_name = opts[:name].to_s.singularize
-              
               instance_variable_get("@_#{opts[:name]}_remove").each do |record|
-                send("remove_#{singular_name}", record)
+                send("remove_#{name}", record) if record && !record.empty?
               end
 
               instance_variable_get("@_#{opts[:name]}_add").each do |record|
-                send("add_#{singular_name}", record)
+                send("add_#{name}", record) if record && !record.empty?
               end
             end
           end
@@ -45,25 +46,25 @@ module Sequel
             instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.detect{ |v1| v.pk == v1.pk } })
             cur.replace(list)
 
+            name = "#{opts[:name]}".singularize
+
             after_save_hook do
-              singular_name = opts[:name].to_s.singularize
-              
               instance_variable_get("@_#{opts[:name]}_remove").each do |record|
-                send("remove_#{singular_name}", record)
+                send("remove_#{name}", record) if record && !record.empty?
               end
 
               instance_variable_get("@_#{opts[:name]}_add").each do |record|
-                send("add_#{singular_name}", record)
+                send("add_#{name}", record) if record && !record.empty?
               end
             end
           end
         end
       end
 
-      module InstanceMethods       
+      module InstanceMethods
       end
 
-      module DatasetMethods       
+      module DatasetMethods
       end
     end
   end
