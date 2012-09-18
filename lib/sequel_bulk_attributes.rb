@@ -18,8 +18,8 @@ module Sequel
           super
           def_bulk_setter(opts) do |list|
             cur = send(opts[:name])
-            instance_variable_set("@_#{opts[:name]}_add", list.reject{ |v| cur.detect{ |v1| v.pk == v1.pk } })
-            instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.detect{ |v1| v.pk == v1.pk } })
+            instance_variable_set("@_#{opts[:name]}_add", list.reject!{ |v| v.empty? }.reject{ |v| cur.detect{ |v1| v.pk == v1.pk } })
+            instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.reject!{ |v| v.empty? }.detect{ |v1| v.pk == v1.pk } })
             cur.replace(list)
 
             name = "#{opts[:name]}".singularize
