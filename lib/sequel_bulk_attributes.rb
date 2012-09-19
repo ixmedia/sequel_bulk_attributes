@@ -18,15 +18,15 @@ module Sequel
           super
           def_bulk_setter(opts) do |list|
             cur = send(opts[:name])
-            instance_variable_set("@_#{opts[:name]}_add", list.reject!{ |v| v.empty? }.reject{ |v| cur.detect{ |v1| v.pk == v1.pk } })
-            instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.reject!{ |v| v.empty? }.detect{ |v1| v.pk == v1.pk } })
+            instance_variable_set("@_#{opts[:name]}_add", list.reject{ |v| cur.detect{ |v1| v.to_i == v1.pk } }) if cur and list
+            instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.detect{ |v1| v.pk == v1.to_i } }) if cur and list
             cur.replace(list)
 
             name = "#{opts[:name]}".singularize
 
             after_save_hook do
               instance_variable_get("@_#{opts[:name]}_remove").each do |record|
-                send("remove_#{name}", record) if record && !record.empty?
+                send("remove_#{name}", record) if record
               end
 
               instance_variable_get("@_#{opts[:name]}_add").each do |record|
@@ -42,15 +42,15 @@ module Sequel
           super
           def_bulk_setter(opts) do |list|
             cur = send(opts[:name])
-            instance_variable_set("@_#{opts[:name]}_add", list.reject{ |v| cur.detect{ |v1| v.pk == v1.pk } })
-            instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.detect{ |v1| v.pk == v1.pk } })
+            instance_variable_set("@_#{opts[:name]}_add", list.reject{ |v| cur.detect{ |v1| v.to_i == v1.pk } })
+            instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.detect{ |v1| v.pk == v1.to_i } })
             cur.replace(list)
 
             name = "#{opts[:name]}".singularize
 
             after_save_hook do
               instance_variable_get("@_#{opts[:name]}_remove").each do |record|
-                send("remove_#{name}", record) if record && !record.empty?
+                send("remove_#{name}", record) if record
               end
 
               instance_variable_get("@_#{opts[:name]}_add").each do |record|
