@@ -20,6 +20,7 @@ module Sequel
             cur = send(opts[:name])
             if cur
               cur.reject{ |v| v == "" }
+            end
             instance_variable_set("@_#{opts[:name]}_add", list.reject{ |v| cur.detect{ |v1| v.to_i == v1.pk } }) if cur and list
             instance_variable_set("@_#{opts[:name]}_remove", cur.reject{ |v| list.detect{ |v1| v.pk == v1.to_i } }) if cur and list
             cur.replace(list)
